@@ -1,11 +1,12 @@
 import string
+import tkinter as tk
+from tkinter import ttk, scrolledtext
 
 class CipherMachine:
     def __init__(self, keyword):
         self.keyword = keyword
         self.cipher_alphabet = self.generate_cipher_alphabet()
         self.cipher_table = self.generate_cipher_table()
-
     def generate_cipher_alphabet(self):
         keyword = self.keyword.upper()
         unique_letters = []
@@ -16,9 +17,7 @@ class CipherMachine:
             if char not in unique_letters:
                 unique_letters.append(char)
         cipher_alphabet = ''.join(unique_letters)
-        cipher_alphabet = cipher_alphabet.replace('A', 'A1').replace('B', 'B2').replace('C', 'C3').replace('D',
-                                                                                                           'D4').replace(
-            'E', 'E5').replace('F', 'F6').replace('G', 'G7').replace('H', 'H8').replace('I', 'I9').replace('J', 'J0')
+        cipher_alphabet = cipher_alphabet.replace('A', 'A1').replace('B', 'B2').replace('C', 'C3').replace('D','D4').replace('E', 'E5').replace('F', 'F6').replace('G', 'G7').replace('H', 'H8').replace('I', 'I9').replace('J', 'J0')
 
         return cipher_alphabet
 
@@ -103,33 +102,66 @@ class CipherMachine:
 
         return decrypted_message
 
+class CipherApp(tk.Tk):
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self.title("Cipher Machine")
 
-def main():
-    keyword = input("Enter keyword for the cipher machine: ")
-    cipher_machine = CipherMachine(keyword)
+        self.keyword_label = ttk.Label(self, text="Enter Codeword:")
+        self.keyword_entry = ttk.Entry(self, width=30)
 
-    choice = input("Do you want to (E)ncrypt or (D)ecrypt a message? ").upper()
+        self.message_label = ttk.Label(self, text="Enter the Message:")
+        self.message_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=50, height=5)
 
-    if choice == 'E':
-        message = input("Enter the message to encrypt: ")
-        codeword = input("Enter the codeword: ")
-        keyword = input("Enter the keyword: ")
+        self.codeword_label = ttk.Label(self, text="Enter Keyword:")
+        self.codeword_entry = ttk.Entry(self, width=30)
+
+        self.result_label = ttk.Label(self, text="Result:")
+        self.result_text = scrolledtext.ScrolledText(self, wrap=tk.WORD, width=50, height=5)
+
+        self.encrypt_button = ttk.Button(self, text="Encrypt", command=self.run_encryption)
+        self.decrypt_button = ttk.Button(self, text="Decrypt", command=self.run_decryption)
+
+        # Layout
+        self.keyword_label.pack(pady=5)
+        self.keyword_entry.pack(pady=5)
+
+        self.message_label.pack(pady=5)
+        self.message_text.pack(pady=5)
+
+        self.codeword_label.pack(pady=5)
+        self.codeword_entry.pack(pady=5)
+
+        self.result_label.pack(pady=10)
+        self.result_text.pack(pady=10)
+
+        self.encrypt_button.pack(pady=5)
+        self.decrypt_button.pack(pady=5)
+
+    def run_encryption(self):
+        keyword = self.keyword_entry.get()
+        message = self.message_text.get("1.0", tk.END)
+        codeword = self.codeword_entry.get()
+
+        cipher_machine = CipherMachine(keyword)
 
         encrypted_msg = cipher_machine.encrypt_message(message)
         sorted_encrypted_msg = cipher_machine.sorting_encrypt_message(encrypted_msg, codeword)
-        print("Encrypted message:", sorted_encrypted_msg)
+        self.result_text.delete(1.0, tk.END)
+        self.result_text.insert(tk.END, f"Encrypted message: {sorted_encrypted_msg}")
 
-    elif choice == 'D':
-        message = input("Enter the message to decrypt: ")
-        codeword = input("Enter the codeword: ")
-        keyword = input("Enter the keyword: ")
+    def run_decryption(self):
+        keyword = self.keyword_entry.get()
+        message = self.message_text.get("1.0", tk.END)
+        codeword = self.codeword_entry.get()
+
+        cipher_machine = CipherMachine(keyword)
 
         unsorted_encrypted_msg = cipher_machine.unsort_encrypt_message(message, codeword)
         decrypted_msg = cipher_machine.decrypt_message(unsorted_encrypted_msg)
-        print("Decrypted message:", decrypted_msg)
-
-    else:
-        print("Invalid choice. Please enter 'E' for encryption or 'D' for decryption.")
+        self.result_text.delete(1.0, tk.END)
+        self.result_text.insert(tk.END, f"Decrypted message: {decrypted_msg}")
 
 if __name__ == "__main__":
-    main()
+    app = CipherApp()
+    app.mainloop()
