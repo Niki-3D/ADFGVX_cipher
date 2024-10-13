@@ -1,7 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox
 from ttkthemes import ThemedTk
-from cipher_machine import CipherMachine
+
+# Import the refactored CipherMachine components
+from cipher_machine import CipherAlphabet, Encrypt, Decrypt, SortEncrypt, UnsortEncrypt
+
 
 class CipherApp(ThemedTk):
     """GUI Application for the Cipher Machine with VS Code-like dark theme."""
@@ -30,13 +33,13 @@ class CipherApp(ThemedTk):
 
     def create_widgets(self):
         """Create the widgets for the GUI."""
-        self.keyword_label = self.create_label("Enter Codeword:")
+        self.keyword_label = self.create_label("Enter Keyword:")
         self.keyword_entry = self.create_entry()
 
         self.message_label = self.create_label("Enter the Message:")
         self.message_text = self.create_scrolled_text()
 
-        self.codeword_label = self.create_label("Enter Keyword:")
+        self.codeword_label = self.create_label("Enter Codeword:")
         self.codeword_entry = self.create_entry()
 
         self.result_label = self.create_label("Result:")
@@ -86,17 +89,25 @@ class CipherApp(ThemedTk):
     def run_encryption(self):
         """Handle encryption when the button is pressed."""
         if self.validate_inputs():
-            cipher_machine = CipherMachine(self.get_keyword())
-            encrypted_msg = cipher_machine.encrypt_message(self.get_message())
-            sorted_encrypted_msg = cipher_machine.sorting_encrypt_message(encrypted_msg, self.get_codeword())
+            cipher_alphabet = CipherAlphabet(self.get_keyword())
+            encryptor = Encrypt(cipher_alphabet.cipher_table)
+
+            encrypted_msg = encryptor.encrypt_message(self.get_message())
+            sorter = SortEncrypt()
+            sorted_encrypted_msg = sorter.sorting_encrypt_message(encrypted_msg, self.get_codeword())
+
             self.display_result(f"Encrypted message: {sorted_encrypted_msg}")
 
     def run_decryption(self):
         """Handle decryption when the button is pressed."""
         if self.validate_inputs():
-            cipher_machine = CipherMachine(self.get_keyword())
-            unsorted_encrypted_msg = cipher_machine.unsort_encrypt_message(self.get_message(), self.get_codeword())
-            decrypted_msg = cipher_machine.decrypt_message(unsorted_encrypted_msg)
+            cipher_alphabet = CipherAlphabet(self.get_keyword())
+            unsorter = UnsortEncrypt()
+
+            unsorted_encrypted_msg = unsorter.unsort_encrypt_message(self.get_message(), self.get_codeword())
+            decryptor = Decrypt(cipher_alphabet.cipher_table)
+
+            decrypted_msg = decryptor.decrypt_message(unsorted_encrypted_msg)
             self.display_result(f"Decrypted message: {decrypted_msg}")
 
     def validate_inputs(self):
@@ -122,8 +133,3 @@ class CipherApp(ThemedTk):
         """Display the result in the result text area."""
         self.result_text.delete(1.0, tk.END)
         self.result_text.insert(tk.END, result)
-
-
-if __name__ == "__main__":
-    app = CipherApp()
-    app.mainloop()
